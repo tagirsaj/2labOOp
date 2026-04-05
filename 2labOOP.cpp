@@ -1,43 +1,118 @@
 ﻿#include <iostream>
+#include <string>
+
+using namespace std;
+
 class Point {
-private:
+protected:
     int x;
     int y;
-public: 
+
+public:
     Point() : x(0), y(0) {
-        std::cout << "Point: Вызван конструктор БЕЗ параметров. Координаты: (" << x << ", " << y << ")\n";
+        cout << "  [Point] Конструктор БЕЗ параметров (" << x << ", " << y << ")\n";
     }
+
     Point(int px, int py) : x(px), y(py) {
-        std::cout << "Point: Вызван конструктор С параметрами. Координаты: (" << x << ", " << y << ")\n";
+        cout << "  [Point] Конструктор С параметрами (" << x << ", " << y << ")\n";
     }
+
     Point(const Point& other) : x(other.x), y(other.y) {
-        std::cout << "Point: Вызван конструктор КОПИРОВАНИЯ.\n";
+        cout << "  [Point] Конструктор КОПИРОВАНИЯ\n";
     }
+
     ~Point() {
-        std::cout << "Point: Вызван ДЕСТРУКТОР для точки (" << x << ", " << y << ")\n";
+        cout << "  [Point] ДЕСТРУКТОР для точки (" << x << ", " << y << ")\n";
     }
+
+    
     void move(int dx, int dy) {
         x += dx;
         y += dy;
-        std::cout << "Point: Точка перемещена. Новые координаты: (" << x << ", " << y << ")\n";
+    }
+    void print() {
+        cout << "Точка (" << x << ", " << y << ")\n";
+    }
+};
+
+class ColoredPoint : public Point {
+private:
+    string color;
+
+public:
+    ColoredPoint(int px, int py, string c) : Point(px, py), color(c) {
+        cout << "  [ColoredPoint] Конструктор потомка. Цвет: " << color << "\n";
+    }
+
+    ~ColoredPoint() {
+        cout << "  [ColoredPoint] ДЕСТРУКТОР потомка\n";
+    }
+    void print() {
+        cout << "Цветная точка [" << color << "] с координатами: ";
+        Point::print();
+    }
+};
+
+class Line {
+private:
+    Point start;
+    Point* end;
+
+public:
+    Line(int sx, int sy, int ex, int ey) : start(sx, sy) {
+        end = new Point(ex, ey);
+        cout << "  [Line] Конструктор линии создан\n";
+    }
+
+    ~Line() {
+        delete end;
+        cout << "  [Line] ДЕСТРУКТОР линии (объект end удален вручную, start удалится сам)\n";
     }
 };
 
 int main() {
-    std::cout << "Тестирование статического создания объектов\n";
-    Point p1;                  
-    Point p2(10, 20);
-    Point p3(p2);              
+    cout << " Наследование и порядок конструкторов\n";
+    {
+        ColoredPoint cp(10, 20, "Красный");
+        cp.print();
+    }
 
-    p1.move(5, 5);             
-    std::cout << "\nТестирование динамического создания объектов\n";
-    
-    Point* p4 = new Point(100, 200);
-    p4->move(50, 0);
+    cout << "\nКомпозиция (Объект и Указатель)\n";
+    {
+        Line myLine(0, 0, 100, 100);
+    }
 
-    std::cout << "\nУдаление динамических объектов\n"; 
-    delete p4;
+    cout << "\nПрисваивание объектов (Копирование)\n";
+    {
+        Point p1(5, 5);
+        Point p2 = p1;
+        p2.move(10, 10);
 
-    std::cout << "\nЗавершение программы (удаление статических объектов)\n";
+        cout << "После сдвига p2:\n";
+        cout << "p1: "; p1.print();
+        cout << "p2: "; p2.print();
+    }
+
+    cout << "\nКопирование указателей\n";
+    {
+        Point* ptr1 = new Point(1, 1);
+        Point* ptr2 = ptr1;
+
+        ptr2->move(4, 4);
+
+        cout << "После сдвига ptr2:\n";
+        cout << "ptr1: "; ptr1->print();
+
+        delete ptr1;
+    }
+
+    cout << "\nПомещение потомка в указатель базового класса\n";
+    {
+        Point* polyPtr = new ColoredPoint(7, 7, "Синий");
+        polyPtr->print();
+        delete polyPtr;
+    }
+
+    cout << "\nЗавершение программы\n";
     return 0;
-}   
+}
